@@ -1,0 +1,17 @@
+# Compiled output extracted from the original jar
+/com/
+/META-INF/
+*.class
+
+# Build output
+out/
+build/
+bin/
+
+# IDE settings
+.idea/
+*.iml
+.vscode/
+
+# macOS
+.DS_Store

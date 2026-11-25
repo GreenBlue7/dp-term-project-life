@@ -30,6 +30,10 @@ public final class Life extends JFrame
 		getContentPane().setLayout	( new BorderLayout()	);
 		getContentPane().add( Universe.instance(), BorderLayout.CENTER); //{=life.java.install}
 
+
+		// Created after the Universe so that "Go" follows "Grid" on the menu bar.
+		Clock.instance().addClockListener(Universe.instance()::nextGeneration);
+
 		pack();
 		setVisible( true );
 	}

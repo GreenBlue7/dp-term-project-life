@@ -138,21 +138,6 @@ public class Universe extends JPanel
 		        }
 			}
 		);
-
-		Clock.instance().addClockListener //{=Universe.clock.subscribe}
-		(	new Clock.Listener()
-			{	public void tick()
-				{	if( outermostCell.figureNextState
-						   ( Cell.DUMMY,Cell.DUMMY,Cell.DUMMY,Cell.DUMMY,
-							 Cell.DUMMY,Cell.DUMMY,Cell.DUMMY,Cell.DUMMY
-						   )
-					  )
-					{	if( outermostCell.transition() )
-							refreshNow();
-					}
-				}
-			}
-		);
 	}
 
 	/** Singleton Accessor. The Universe object itself is manufactured
@@ -161,6 +146,18 @@ public class Universe extends JPanel
 
 	public static Universe instance()
 	{	return theInstance;
+	}
+
+	/**	Advances the grid by one generation and repaints what changed.
+	 * 	Called on every clock tick.
+	 */
+	public void nextGeneration() {
+		if (outermostCell.figureNextState(
+				Cell.DUMMY, Cell.DUMMY, Cell.DUMMY, Cell.DUMMY,
+				Cell.DUMMY, Cell.DUMMY, Cell.DUMMY, Cell.DUMMY
+		)) {
+			if (outermostCell.transition()) refreshNow();
+		}
 	}
 
 	private void doLoad()

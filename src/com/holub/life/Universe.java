@@ -157,7 +157,6 @@ public class Universe extends JPanel
 				Cell.DUMMY, Cell.DUMMY, Cell.DUMMY, Cell.DUMMY
 		)) {
 			if (outermostCell.transition()) refreshNow();
-			;
 		}
 	}
 

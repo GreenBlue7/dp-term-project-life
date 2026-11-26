@@ -6,29 +6,25 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-import com.holub.io.Files;
-import com.holub.ui.MenuSite;
-
 import com.holub.life.Cell;
 import com.holub.life.Storable;
-import com.holub.life.Clock;
 import com.holub.life.Neighborhood;
 import com.holub.life.Resident;
 
 /**
- * The Universe is a mediator that sits between the Swing
- * event model and the Life classes. It is also a singleton,
- * accessed via Universe.instance(). It handles all
- * Swing events and translates them into requests to the
- * outermost Neighborhood. It also creates the Composite
- * Neighborhood.
+ * The Universe sits between the Swing event model and the Life classes
+ * [[Mediator]]: it turns mouse clicks and paint requests into calls on the
+ * outermost Neighborhood, which it also creates. Load and store go
+ * through the grid's Memento, and Universe never looks inside it.
+ *
+ * <p>It used to be a Singleton that installed its own menus and found
+ * the clock by itself. {@link Life} now creates it and wires it up.
  *
  * @include /etc/license.txt
  */
 
 public class Universe extends JPanel
 {	private 		final Cell  	outermostCell;
-	private static	final Universe 	theInstance = new Universe();
 
 	/** The default height and width of a Neighborhood in cells.
 	 *  If it's too big, you'll run too slowly because
@@ -44,10 +40,7 @@ public class Universe extends JPanel
 	 */
 	private static final int  DEFAULT_CELL_SIZE = 8;
 
-	// The constructor is private so that the universe can be created
-	// only by an outer-class method [Neighborhood.createUniverse()].
-
-	private Universe()
+	public Universe()
 	{	// Create the nested Cells that comprise the "universe." A bug
 		// in the current implementation causes the program to fail
 		// miserably if the overall size of the grid is too big to fit
@@ -102,50 +95,6 @@ public class Universe extends JPanel
 				}
 			}
 		);
-
-		MenuSite.addLine( this, "Grid", "Clear",
-			new ActionListener()
-			{	public void actionPerformed(ActionEvent e)
-				{	outermostCell.clear();
-					repaint();
-				}
-			}
-		);
-
-		MenuSite.addLine			// {=Universe.load.setup}
-		(	this, "Grid", "Load",
-			new ActionListener()
-			{	public void actionPerformed(ActionEvent e)
-				{	doLoad();
-				}
-			}
-		);
-
-		MenuSite.addLine
-		(	this, "Grid", "Store",
-			new ActionListener()
-			{	public void actionPerformed(ActionEvent e)
-				{	doStore();
-				}
-			}
-		);
-
-		MenuSite.addLine
-		(	this, "Grid", "Exit",
-			new ActionListener()
-			{	public void actionPerformed(ActionEvent e)
-		        {	System.exit(0);
-		        }
-			}
-		);
-	}
-
-	/** Singleton Accessor. The Universe object itself is manufactured
-	 *  in Neighborhood.createUniverse()
-	 */
-
-	public static Universe instance()
-	{	return theInstance;
 	}
 
 	/**	Advances the grid by one generation and repaints what changed.
@@ -160,46 +109,33 @@ public class Universe extends JPanel
 		}
 	}
 
-	private void doLoad()
-	{	try
-		{
-			FileInputStream in = new FileInputStream(
-			   Files.userSelected(".",".life","Life File","Load"));
+	/** Kills every cell on the grid. */
+	public void clear()
+	{	outermostCell.clear();
+		repaint();
+	}
 
-			Clock.instance().stop();		// stop the game and
-			outermostCell.clear();			// clear the board.
+	/** Replaces the grid with the cells read from <code>in</code>.
+	 *  The grid is cleared first, as in the original "Load".
+	 */
+	public void load( InputStream in ) throws IOException
+	{	try
+		{	outermostCell.clear();
 
 			Storable memento = outermostCell.createMemento();
 			memento.load( in );
 			outermostCell.transfer( memento, new Point(0,0), Cell.LOAD );
-
-			in.close();
 		}
-		catch( IOException theException )
-		{	JOptionPane.showMessageDialog( null, "Read Failed!",
-					"The Game of Life", JOptionPane.ERROR_MESSAGE);
+		finally
+		{	repaint();
 		}
-		repaint();
 	}
 
-	private void doStore()
-	{	try
-		{
-			FileOutputStream out = new FileOutputStream(
-				  Files.userSelected(".",".life","Life File","Write"));
-
-			Clock.instance().stop();		// stop the game
-
-			Storable memento = outermostCell.createMemento();
-			outermostCell.transfer( memento, new Point(0,0), Cell.STORE );
-			memento.flush(out);
-
-			out.close();
-		}
-		catch( IOException theException )
-		{	JOptionPane.showMessageDialog( null, "Write Failed!",
-					"The Game of Life", JOptionPane.ERROR_MESSAGE);
-		}
+	/** Writes the live cells to <code>out</code>. */
+	public void store( OutputStream out ) throws IOException
+	{	Storable memento = outermostCell.createMemento();
+		outermostCell.transfer( memento, new Point(0,0), Cell.STORE );
+		memento.flush( out );
 	}
 
 	/** Override paint to ask the outermost Neighborhood

@@ -29,9 +29,6 @@ public class Clock
 {	private Timer			clock		= new Timer();
 	private TimerTask		tick		= null;
 
-	private Clock() {
-	}
-
 	private static Clock instance;
 
 	/** The clock is a singleton. Get a reference to it by calling

@@ -450,7 +450,10 @@ public final class Neighborhood implements Cell
 		for( int row = 0; row < gridSize; ++row )
 		{   for( int column = 0; column < gridSize; ++column )
 			{	if(grid[row][column].transfer(memento,upperLeft,load))
-					amActive = true;
+				{	amActive = true;
+					if( load )
+						rememberThatCellAtEdgeChangedState(row, column);
+				}
 
 				Direction d =
 						grid[row][column].isDisruptiveTo();

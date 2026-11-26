@@ -1,24 +1,20 @@
 package com.holub.life;
 
+import static com.holub.life.LifeFiles.entriesIn;
+import static com.holub.life.LifeFiles.lifeFile;
+import static com.holub.life.LifeFiles.liveCells;
+import static com.holub.life.LifeFiles.store;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.awt.Point;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 /**
- * Load and store through Universe, without file dialogs. A .life file is
- * a serialized collection of the live cells' positions.
+ * Load and store through Universe, without file dialogs.
  */
 class UniverseStorageTest {
 
@@ -31,7 +27,7 @@ class UniverseStorageTest {
         Universe copy = new Universe();
         copy.load(new ByteArrayInputStream(store(original)));
 
-        assertEquals(cells, new HashSet<>(cellsIn(store(copy))));
+        assertEquals(cells, liveCells(copy));
     }
 
     @Test
@@ -39,29 +35,27 @@ class UniverseStorageTest {
         Universe universe = new Universe();
         universe.load(lifeFile(Set.of(new Point(1, 1), new Point(2, 1), new Point(3, 1))));
 
-        assertEquals(3, cellsIn(store(universe)).size());
+        assertEquals(3, entriesIn(store(universe)).size());
     }
 
-    private static InputStream lifeFile(Set<Point> cells) throws IOException {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
-            out.writeObject(new LinkedList<>(cells));
-        }
-        return new ByteArrayInputStream(bytes.toByteArray());
+    /** The blinker sits on the east edge of the top-left block, so its next
+     *  generation needs a cell born in the neighboring block. */
+    @Test
+    void loadedPatternOnBlockEdgeWakesTheNeighborBlock() throws Exception {
+        Universe universe = new Universe();
+        universe.load(lifeFile(Set.of(new Point(7, 3), new Point(7, 4), new Point(7, 5))));
+
+        universe.nextGeneration();
+        assertEquals(Set.of(new Point(6, 4), new Point(7, 4), new Point(8, 4)), liveCells(universe));
     }
 
-    private static byte[] store(Universe universe) throws IOException {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        universe.store(bytes);
-        return bytes.toByteArray();
-    }
+    @Test
+    void unreadableFileLeavesTheBoardAlone() throws Exception {
+        Universe universe = new Universe();
+        universe.toggle(10, 10);
 
-    private static List<Point> cellsIn(byte[] lifeFile) throws Exception {
-        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(lifeFile))) {
-            List<Point> cells = new ArrayList<>();
-            for (Object cell : (Iterable<?>) in.readObject())
-                cells.add((Point) cell);
-            return cells;
-        }
+        assertThrows(IOException.class,
+                () -> universe.load(new ByteArrayInputStream(new byte[] {1, 2, 3})));
+        assertEquals(Set.of(new Point(10, 10)), liveCells(universe));
     }
 }

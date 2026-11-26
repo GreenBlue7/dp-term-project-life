@@ -6,15 +6,17 @@ import javax.swing.*;
 import com.holub.io.Files;
 import com.holub.ui.MenuSite;
 import com.holub.life.command.Command;
+import com.holub.life.command.CommandHistory;
 
 /*******************************************************************
  * An implementation of Conway's Game of Life.
  *
  * <p>Life creates the clock and the universe and connects them
- * [[Observer: the universe listens to the clock]]. It is also the client
- * of the Command pattern: it builds every menu item from a command whose
- * receiver is the clock or the universe. The order of the menus is
- * decided here, not by the order in which objects happen to be created.
+ * (Observer: the universe listens to the clock). It is also the client
+ * of the Command pattern: menu items, clicks and clock ticks are all
+ * turned into commands whose receiver is the clock or the universe.
+ * Changes to the board go through one {@link CommandHistory}, so they
+ * can be undone one at a time.
  *
  * @include /etc/license.txt
  */
@@ -23,12 +25,13 @@ public final class Life extends JFrame
 {
 	private final Universe universe = new Universe();
 	private final Clock clock = new Clock();
+	private final CommandHistory history = new CommandHistory( 100 );
 
 	public static void main( String[] arguments )
 	{	new Life();
 	}
 
-		private Life()
+	private Life()
 	{	super( "The Game of Life. "
 					+"(c)2003 Allen I. Holub <http://www.holub.com>");
 
@@ -38,9 +41,12 @@ public final class Life extends JFrame
 		getContentPane().setLayout	( new BorderLayout()	);
 		getContentPane().add( universe, BorderLayout.CENTER); //{=life.java.install}
 
-		clock.addClockListener( universe::nextGeneration );
+		clock.addClockListener( () -> history.execute( SnapshotCommand.step(universe) ) );
+		universe.setClickListener( (column, row) ->
+				history.execute( new ToggleCellCommand(universe, column, row) ) );
 
-		addCommand( "Grid", "Clear",				() -> universe.clear()			);
+		addCommand( "Grid", "Clear",	() -> history.execute( SnapshotCommand.clear(universe) ) );
+		addCommand( "Grid", "Undo",		() -> undo()	);
 		addCommand( "Grid", "Load",					() -> load()					);
 		addCommand( "Grid", "Store",				() -> store()					);
 		addCommand( "Grid", "Exit",					() -> System.exit(0)			);
@@ -60,12 +66,19 @@ public final class Life extends JFrame
 		MenuSite.addLine(this, menu, item, e -> command.execute());
 	}
 
+	/** Stops the clock first; otherwise the next tick would redo the step. */
+	private void undo()
+	{	clock.stop();
+		history.undo();
+	}
+
 	/** The clock stops only after a file is chosen, as in the original. */
 	private void load()
 	{	try( InputStream in = new FileInputStream(
 				Files.userSelected(".",".life","Life File","Load")) )
 		{	clock.stop();
 			universe.load( in );
+			history.clear();		// the old commands no longer match the board
 		}
 		catch( IOException e )
 		{	showError( "Read Failed!" );

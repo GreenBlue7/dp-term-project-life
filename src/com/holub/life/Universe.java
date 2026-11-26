@@ -13,7 +13,7 @@ import com.holub.life.Resident;
 
 /**
  * The Universe sits between the Swing event model and the Life classes
- * [[Mediator]]: it turns mouse clicks and paint requests into calls on the
+ * (Mediator): it turns mouse clicks and paint requests into calls on the
  * outermost Neighborhood, which it also creates. Load and store go
  * through the grid's Memento, and Universe never looks inside it.
  *

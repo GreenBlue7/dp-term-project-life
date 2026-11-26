@@ -11,7 +11,7 @@ import com.holub.life.command.Command;
  * An implementation of Conway's Game of Life.
  *
  * <p>Life creates the clock and the universe and connects them
- * [[Observer: the universe listens to the clock]]. It is also the client
+ * (Observer: the universe listens to the clock). It is also the client
  * of the Command pattern: it builds every menu item from a command whose
  * receiver is the clock or the universe. The order of the menus is
  * decided here, not by the order in which objects happen to be created.
@@ -28,7 +28,7 @@ public final class Life extends JFrame
 	{	new Life();
 	}
 
-		private Life()
+	private Life()
 	{	super( "The Game of Life. "
 					+"(c)2003 Allen I. Holub <http://www.holub.com>");
 

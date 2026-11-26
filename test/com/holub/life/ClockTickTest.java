@@ -14,7 +14,7 @@ class ClockTickTest {
     @Test
     void tickNotifiesListenersWithoutMenuBar() {
         AtomicInteger ticks = new AtomicInteger();
-        Clock clock = Clock.instance();
+        Clock clock = new Clock();
         clock.addClockListener(ticks::incrementAndGet);
 
         clock.tick();

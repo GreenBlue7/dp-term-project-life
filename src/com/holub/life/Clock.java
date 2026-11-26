@@ -29,18 +29,6 @@ public class Clock
 {	private Timer			clock		= new Timer();
 	private TimerTask		tick		= null;
 
-	private static Clock instance;
-
-	/** The clock is a singleton. Get a reference to it by calling
-	 *  <code>Clock.instance()</code>. It's illegal to call
-	 *  <code>new Clock()</code>.
-	 */
-	public synchronized static Clock instance()
-	{	if( instance == null )
-			instance = new Clock();
-		return instance;
-	}
-
 	/** Start up the clock.
 	 *  @param millisecondsBetweenTicks The number of milliseconds between
 	 *  					 ticks. A value of 0 indicates that
@@ -72,7 +60,7 @@ public class Clock
 
 	/** Add a listener that's notified every time the clock ticks:
 	 *  <PRE>
-	 *  Clock.instance().addClockListener
+	 *  clock.addClockListener
 	 *  (	new Clock.Listener()
 	 *  	{	public void tick()
 	 *  		{	System.out.println("tick!");

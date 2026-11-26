@@ -25,6 +25,7 @@ import com.holub.life.Resident;
 
 public class Universe extends JPanel
 {	private 		final Cell  	outermostCell;
+	private 		ClickListener	clickListener = this::toggle;
 
 	/** The default height and width of a Neighborhood in cells.
 	 *  If it's too big, you'll run too slowly because
@@ -87,26 +88,60 @@ public class Universe extends JPanel
 		addMouseListener					//{=Universe.mouse}
 		(	new MouseAdapter()
 			{	public void mousePressed(MouseEvent e)
-				{	Rectangle bounds = getBounds();
-					bounds.x = 0;
-					bounds.y = 0;
-					outermostCell.userClicked(e.getPoint(),bounds);
-					repaint();
+				{	int width			= outermostCell.widthInCells();
+					int pixelsPerCell	= getWidth() / width;
+					if( pixelsPerCell == 0 )
+						return;
+
+					int column	= e.getX() / pixelsPerCell;
+					int row		= e.getY() / pixelsPerCell;
+					if( column < width && row < width )
+						clickListener.cellClicked( column, row );
 				}
 			}
 		);
 	}
 
-	/**	Advances the grid by one generation and repaints what changed.
-	 * 	Called on every clock tick.
+	/** Receives the cell the user clicked, in board coordinates. */
+	public interface ClickListener
+	{	void cellClicked( int column, int row );
+	}
+
+	/** Decides what a click does. By default it toggles the cell. */
+	public void setClickListener( ClickListener listener )
+	{	clickListener = listener;
+	}
+
+	/** Flips one cell between alive and dead. Toggling twice restores it. */
+	public void toggle( int column, int row )
+	{	int width = outermostCell.widthInCells();
+		outermostCell.userClicked( new Point(column, row),
+								   new Rectangle(0, 0, width, width) );
+		repaint();
+	}
+
+	/** Advances the grid by one generation and repaints what changed.
+	 *  @return true if any cell changed.
 	 */
-	public void nextGeneration() {
-		if (outermostCell.figureNextState(
+	public boolean nextGeneration() {
+		boolean changed = outermostCell.figureNextState(
 				Cell.DUMMY, Cell.DUMMY, Cell.DUMMY, Cell.DUMMY,
-				Cell.DUMMY, Cell.DUMMY, Cell.DUMMY, Cell.DUMMY
-		)) {
-			if (outermostCell.transition()) refreshNow();
-		}
+				Cell.DUMMY, Cell.DUMMY, Cell.DUMMY, Cell.DUMMY)
+			&& outermostCell.transition();
+		if (changed) refreshNow();
+		return changed;
+	}
+
+	/** Captures the board in a Memento that only the grid can read. */
+	Storable snapshot()
+	{	return outermostCell.createMemento();
+	}
+
+	/** Puts back a board captured by {@link #snapshot()} or read from a file. */
+	void restore( Storable memento )
+	{	outermostCell.clear();
+		outermostCell.transfer( memento, new Point(0,0), Cell.LOAD );
+		repaint();
 	}
 
 	/** Kills every cell on the grid. */
@@ -116,19 +151,12 @@ public class Universe extends JPanel
 	}
 
 	/** Replaces the grid with the cells read from <code>in</code>.
-	 *  The grid is cleared first, as in the original "Load".
+	 *  The board is left as it was if the file cannot be read.
 	 */
 	public void load( InputStream in ) throws IOException
-	{	try
-		{	outermostCell.clear();
-
-			Storable memento = outermostCell.createMemento();
-			memento.load( in );
-			outermostCell.transfer( memento, new Point(0,0), Cell.LOAD );
-		}
-		finally
-		{	repaint();
-		}
+	{	Storable memento = outermostCell.createMemento();
+		memento.load( in );
+		restore( memento );
 	}
 
 	/** Writes the live cells to <code>out</code>.

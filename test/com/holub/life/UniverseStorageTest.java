@@ -5,9 +5,11 @@ import static com.holub.life.LifeFiles.lifeFile;
 import static com.holub.life.LifeFiles.liveCells;
 import static com.holub.life.LifeFiles.store;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.awt.Point;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -45,5 +47,15 @@ class UniverseStorageTest {
 
         universe.nextGeneration();
         assertEquals(Set.of(new Point(6, 4), new Point(7, 4), new Point(8, 4)), liveCells(universe));
+    }
+
+    @Test
+    void unreadableFileLeavesTheBoardAlone() throws Exception {
+        Universe universe = new Universe();
+        universe.toggle(10, 10);
+
+        assertThrows(IOException.class,
+                () -> universe.load(new ByteArrayInputStream(new byte[] {1, 2, 3})));
+        assertEquals(Set.of(new Point(10, 10)), liveCells(universe));
     }
 }

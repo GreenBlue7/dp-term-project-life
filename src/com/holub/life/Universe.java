@@ -131,11 +131,11 @@ public class Universe extends JPanel
 		}
 	}
 
-	/** Writes the live cells to <code>out</code>. */
+	/** Writes the live cells to <code>out</code>.
+	 *  createMemento() already records every live cell, so no further transfer is needed.
+	 */
 	public void store( OutputStream out ) throws IOException
-	{	Storable memento = outermostCell.createMemento();
-		outermostCell.transfer( memento, new Point(0,0), Cell.STORE );
-		memento.flush( out );
+	{	outermostCell.createMemento().flush( out );
 	}
 
 	/** Override paint to ask the outermost Neighborhood

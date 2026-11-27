@@ -29,6 +29,7 @@ import com.holub.life.Resident;
 public class Universe extends JPanel
 {	private 		final Cell  	outermostCell;
 	private 		ClickListener	clickListener = this::toggle;
+	private 		final RuleSlot	rules = new RuleSlot();
 
 	/** The default height and width of a Neighborhood in cells.
 	 *  If it's too big, you'll run too slowly because
@@ -54,7 +55,7 @@ public class Universe extends JPanel
 						(	DEFAULT_GRID_SIZE,
 							new Neighborhood
 							(	DEFAULT_GRID_SIZE,
-								new Resident()
+								new Resident( rules )
 							)
 						);
 

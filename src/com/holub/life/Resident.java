@@ -1,18 +1,18 @@
 package com.holub.life;
 
 import java.awt.*;
-import javax.swing.*;
+
 import com.holub.ui.Colors;	// Contains constants specifying various
 							// colors not defined in java.awt.Color.
-import com.holub.life.Cell;
-import com.holub.life.Storable;
-import com.holub.life.Direction;
-import com.holub.life.Neighborhood;
-import com.holub.life.Universe;
 
-/*** ****************************************************************
- * The Resident class implements a single cell---a "resident" of a
- * block.
+
+/***
+ * The Resident class implements a single cell---a "resident" of a block.
+ * It asks its {@link LifeRule} whether it lives on, instead of
+ * hard-coding Conway's rule. All cells share one {@link RuleSlot}:
+ * create(), the original Prototype hands the same slot to every copy.
+ *
+ * <p>Pattern: Strategy. Resident is the context.</p>
  *
  * @include /etc/license.txt
  */
@@ -26,7 +26,17 @@ public final class Resident implements Cell
 	private boolean amAlive 	= false;
 	private boolean willBeAlive	= false;
 
+	private final RuleSlot rules;
+
 	private boolean isStable(){return amAlive == willBeAlive; }
+
+	public Resident()
+	{   this( new RuleSlot() );
+	}
+
+	Resident( RuleSlot rules )
+	{	this.rules = rules;
+	}
 
 	/** figure the next state.
 	 *  @return true if the cell is not stable (will change state on the
@@ -58,7 +68,7 @@ public final class Resident implements Cell
 		if( southeast.isAlive()) ++neighbors;
 		if( southwest.isAlive()) ++neighbors;
 
-		willBeAlive = (neighbors==3 || (amAlive && neighbors==2));
+		willBeAlive = rules.getRule().nextState( amAlive, neighbors );
 		return !isStable();
 	}
 
@@ -104,7 +114,7 @@ public final class Resident implements Cell
 
 	public void	   clear()			{amAlive = willBeAlive = false; }
 	public boolean isAlive()		{return amAlive;			    }
-	public Cell    create()			{return new Resident();			}
+	public Cell    create()			{return new Resident(rules);			}
 	public int 	   widthInCells()	{return 1;}
 
 	public Direction isDisruptiveTo()

@@ -23,6 +23,9 @@ import com.holub.life.Storable;
  * quiescent (none of the Cells it contains are active), then it
  * ignores any requests to update itself.
  *
+ * <p>Pattern: Composite. This is the composite. It is also the
+ * originator of the Memento used for load, store and undo.
+ *
  * <h3>History</h3>
  * <p>11-29-04
  * Alexy Marinichev fixed the disapearing-glider problem by clearing

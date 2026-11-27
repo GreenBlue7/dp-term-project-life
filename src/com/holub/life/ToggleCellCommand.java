@@ -3,10 +3,12 @@ package com.holub.life;
 import com.holub.life.command.UndoableCommand;
 
 /**
- * Toggles one cell (Command). Toggling is its own inverse, so undo toggles
+ * Toggles one cell. Toggling is its own inverse, so undo toggles
  * the same cell again and no snapshot is needed. The cell is kept in board
  * coordinates rather than pixels, so undo still hits the right cell after
  * the window has been resized.
+ *
+ * <p>Pattern: Command. A concrete command; Universe is the receiver.
  */
 final class ToggleCellCommand implements UndoableCommand {
 

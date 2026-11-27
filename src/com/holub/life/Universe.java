@@ -12,13 +12,16 @@ import com.holub.life.Neighborhood;
 import com.holub.life.Resident;
 
 /**
- * The Universe sits between the Swing event model and the Life classes
- * (Mediator): it turns mouse clicks and paint requests into calls on the
- * outermost Neighborhood, which it also creates. Load and store go
- * through the grid's Memento, and Universe never looks inside it.
+ * The Universe sits between the Swing event model and the Life classes:
+ * it turns mouse clicks and paint requests into calls on the outermost
+ * Neighborhood, which it also creates. Load and store go through the
+ * grid's Memento, and Universe never looks inside it.
  *
  * <p>It used to be a Singleton that installed its own menus and found
  * the clock by itself. {@link Life} now creates it and wires it up.
+ *
+ * <p>Pattern: Mediator between Swing and the cells. Also the receiver
+ * of the board commands.
  *
  * @include /etc/license.txt
  */

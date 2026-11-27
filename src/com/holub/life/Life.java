@@ -11,12 +11,13 @@ import com.holub.life.command.CommandHistory;
 /*******************************************************************
  * An implementation of Conway's Game of Life.
  *
- * <p>Life creates the clock and the universe and connects them
- * (Observer: the universe listens to the clock). It is also the client
- * of the Command pattern: menu items, clicks and clock ticks are all
- * turned into commands whose receiver is the clock or the universe.
+ * <p>Life creates the clock and the universe and connects them, so the
+ * universe moves on every tick. Menu items, clicks and clock ticks are
+ * all turned into commands whose receiver is the clock or the universe.
  * Changes to the board go through one {@link CommandHistory}, so they
  * can be undone one at a time.
+ *
+ * <p>Pattern: Command. Life is the client. It also wires the Observer.
  *
  * @include /etc/license.txt
  */

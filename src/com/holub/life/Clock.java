@@ -9,9 +9,10 @@ import com.holub.tools.Publisher;
 /***
  * The <code>Clock</code> class handles the timing of gameboard
  * updates and sends notifications off to any observers every time the
- * clock "ticks" (Observer: Clock is the subject). The speed menu is
- * built by {@link Life} from commands, so a Clock can be created
- * without a menu bar.
+ * clock "ticks." The speed menu is built by {@link Life} from commands,
+ * so a Clock can be created without a menu bar.
+ *
+ * <p>Pattern: Observer. Clock is the subject.
  *
  * <h2>Revisions</h2>
  * <p>

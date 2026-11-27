@@ -5,11 +5,13 @@ import com.holub.life.command.UndoableCommand;
 
 /**
  * Undoes a change that has no inverse, such as advancing a generation,
- * by restoring a snapshot taken just before it (Command + Memento). The
- * command only holds the snapshot; it never looks inside it.
+ * by restoring a snapshot taken just before it. The command only holds
+ * the snapshot; it never looks inside it.
  *
  * <p>The change is passed in as a function instead of being written in a
  * subclass, so one class covers both a generation step and Clear.
+ *
+ * <p>Pattern: Command + Memento. This command is the caretaker.
  */
 final class SnapshotCommand implements UndoableCommand {
 

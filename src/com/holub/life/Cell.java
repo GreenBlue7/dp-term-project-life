@@ -9,6 +9,9 @@ import com.holub.life.Storable;
  * an individual cell on the board) and {@link Neighborhood},
  * which represents a group of cells.
  *
+ * <p>Pattern: Composite. Cell is the component, Resident the leaf and
+ * Neighborhood the composite.
+ *
  * @include /etc/license.txt
  */
 
@@ -132,6 +135,7 @@ public interface Cell
 	 * 	the public DUMMY field, declared below. I'd like this
 	 * 	class to be private, but the JLS doesn't allow private
 	 * 	members in an interface.
+	 * 	<p>Pattern: Null Object, for the neighbors beyond the edge.
 	 */
 
 	public static final Cell DUMMY = new Cell()

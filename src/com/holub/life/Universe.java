@@ -12,13 +12,16 @@ import com.holub.life.Neighborhood;
 import com.holub.life.Resident;
 
 /**
- * The Universe sits between the Swing event model and the Life classes
- * (Mediator): it turns mouse clicks and paint requests into calls on the
- * outermost Neighborhood, which it also creates. Load and store go
- * through the grid's Memento, and Universe never looks inside it.
+ * The Universe sits between the Swing event model and the Life classes:
+ * it turns mouse clicks and paint requests into calls on the outermost
+ * Neighborhood, which it also creates. Load and store go through the
+ * grid's Memento, and Universe never looks inside it.
  *
  * <p>It used to be a Singleton that installed its own menus and found
  * the clock by itself. {@link Life} now creates it and wires it up.
+ *
+ * <p>Pattern: Mediator between Swing and the cells. Also the receiver
+ * of the board commands.
  *
  * @include /etc/license.txt
  */
@@ -26,6 +29,7 @@ import com.holub.life.Resident;
 public class Universe extends JPanel
 {	private 		final Cell  	outermostCell;
 	private 		ClickListener	clickListener = this::toggle;
+	private 		final RuleSlot	rules = new RuleSlot();
 
 	/** The default height and width of a Neighborhood in cells.
 	 *  If it's too big, you'll run too slowly because
@@ -51,7 +55,7 @@ public class Universe extends JPanel
 						(	DEFAULT_GRID_SIZE,
 							new Neighborhood
 							(	DEFAULT_GRID_SIZE,
-								new Resident()
+								new Resident( rules )
 							)
 						);
 
@@ -130,6 +134,15 @@ public class Universe extends JPanel
 			&& outermostCell.transition();
 		if (changed) refreshNow();
 		return changed;
+	}
+
+	/** Switches every cell to <code>rule</code>. Blocks that were stable
+	 *  under the old rule are asleep and would ignore the new one, so the
+	 *  board is reloaded as it is, which wakes every block with live cells.
+	 */
+	public void setRule( LifeRule rule )
+	{	rules.setRule( rule );
+		restore( snapshot() );
 	}
 
 	/** Captures the board in a Memento that only the grid can read. */

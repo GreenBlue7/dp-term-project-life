@@ -5,12 +5,14 @@ import java.util.Deque;
 
 /**
  * Runs commands and keeps the undoable ones, newest first, so they can be
- * undone in reverse order (Command: the invoker that supports undo).
- * Each command carries whatever it needs to reverse itself.
+ * undone in reverse order. Each command carries whatever it needs to
+ * reverse itself.
  *
  * <p>Clock ticks arrive on the timer thread while clicks and Undo arrive
  * on the Swing thread. The methods are synchronized, so commands that go
  * through one history never change the board at the same time.
+ *
+ * <p>Pattern: Command. This is the invoker that supports undo.
  */
 public final class CommandHistory {
 

@@ -136,6 +136,15 @@ public class Universe extends JPanel
 		return changed;
 	}
 
+	/** Switches every cell to <code>rule</code>. Blocks that were stable
+	 *  under the old rule are asleep and would ignore the new one, so the
+	 *  board is reloaded as it is, which wakes every block with live cells.
+	 */
+	public void setRule( LifeRule rule )
+	{	rules.setRule( rule );
+		restore( snapshot() );
+	}
+
 	/** Captures the board in a Memento that only the grid can read. */
 	Storable snapshot()
 	{	return outermostCell.createMemento();

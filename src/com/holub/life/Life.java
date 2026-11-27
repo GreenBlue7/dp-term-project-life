@@ -59,12 +59,21 @@ public final class Life extends JFrame
 		addCommand( "Go", "Medium",					() -> clock.startTicking(70)	);
 		addCommand( "Go", "Fast",					() -> clock.startTicking(30)	);
 
+		addRule( "Conway",		LifeRule.CONWAY		);
+		addRule( "HighLife",	LifeRule.HIGHLIFE	);
+		addRule( "Seeds",		LifeRule.SEEDS		);
+
+
 		pack();
 		setVisible( true );
 	}
 
 	private void addCommand(String menu, String item, Command command) {
 		MenuSite.addLine(this, menu, item, e -> command.execute());
+	}
+
+	private void addRule(String label, LifeRule rule){
+		addCommand("Rules", label, () -> history.execute(() -> universe.setRule(rule)));
 	}
 
 	/** Stops the clock first; otherwise the next tick would redo the step. */

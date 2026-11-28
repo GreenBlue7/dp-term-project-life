@@ -63,6 +63,9 @@ public final class Life extends JFrame
 		addRule( "Conway",		LifeRule.CONWAY		);
 		addRule( "HighLife",	LifeRule.HIGHLIFE	);
 		addRule( "Seeds",		LifeRule.SEEDS		);
+		addRule( "Day & Night",			LifeRule.DAY_AND_NIGHT		);
+		addRule( "Life without Death",	LifeRule.LIFE_WITHOUT_DEATH	);
+		addRule( "Maze",				LifeRule.MAZE				);
 
 
 		pack();

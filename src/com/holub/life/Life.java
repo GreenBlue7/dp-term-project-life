@@ -27,6 +27,7 @@ public final class Life extends JFrame
 	private final Universe universe = new Universe();
 	private final Clock clock = new Clock();
 	private final CommandHistory history = new CommandHistory( 100 );
+	private final Player player = new Player(clock, history, universe);
 
 	public static void main( String[] arguments )
 	{	new Life();
@@ -41,27 +42,30 @@ public final class Life extends JFrame
 		setDefaultCloseOperation	( EXIT_ON_CLOSE 		);
 		getContentPane().setLayout	( new BorderLayout()	);
 		getContentPane().add( universe, BorderLayout.CENTER); //{=life.java.install}
+		getContentPane().add( controls(), BorderLayout.SOUTH );
 
-		clock.addClockListener( () -> history.execute( SnapshotCommand.step(universe) ) );
 		universe.setClickListener( (column, row) ->
 				history.execute( new ToggleCellCommand(universe, column, row) ) );
 
 		addCommand( "Grid", "Clear",	() -> history.execute( SnapshotCommand.clear(universe) ) );
-		addCommand( "Grid", "Undo",		() -> undo()	);
+		addCommand( "Grid", "Undo",		() -> player.stepBack()	);
 		addCommand( "Grid", "Load",					() -> load()					);
 		addCommand( "Grid", "Store",				() -> store()					);
 		addCommand( "Grid", "Exit",					() -> System.exit(0)			);
 
-		addCommand( "Go", "Halt",					() -> clock.stop()				);
-		addCommand( "Go", "Tick (Single Step)",		() -> clock.tick()				);
-		addCommand( "Go", "Agonizing",				() -> clock.startTicking(500)	);
-		addCommand( "Go", "Slow",					() -> clock.startTicking(150)	);
-		addCommand( "Go", "Medium",					() -> clock.startTicking(70)	);
-		addCommand( "Go", "Fast",					() -> clock.startTicking(30)	);
+		addCommand( "Go", "Halt",					() -> player.pause()				);
+		addCommand( "Go", "Tick (Single Step)",		() -> player.stepForward()				);
+		addCommand( "Go", "Agonizing",				() -> player.playAt(Player.AGONIZING)	);
+		addCommand( "Go", "Slow",					() -> player.playAt(Player.SLOW)	);
+		addCommand( "Go", "Medium",					() -> player.playAt(Player.MEDIUM)	);
+		addCommand( "Go", "Fast",					() -> player.playAt(Player.FAST)	);
 
 		addRule( "Conway",		LifeRule.CONWAY		);
 		addRule( "HighLife",	LifeRule.HIGHLIFE	);
 		addRule( "Seeds",		LifeRule.SEEDS		);
+		addRule( "Day & Night",			LifeRule.DAY_AND_NIGHT		);
+		addRule( "Life without Death",	LifeRule.LIFE_WITHOUT_DEATH	);
+		addRule( "Maze",				LifeRule.MAZE				);
 
 
 		pack();
@@ -76,17 +80,32 @@ public final class Life extends JFrame
 		addCommand("Rules", label, () -> history.execute(() -> universe.setRule(rule)));
 	}
 
-	/** Stops the clock first; otherwise the next tick would redo the step. */
-	private void undo()
-	{	clock.stop();
-		history.undo();
+	/** The << < > >> buttons under the board, with the player's state. */
+	private JComponent controls()
+	{	JLabel status = new JLabel( player.status() );
+		player.setOnChange( () ->
+				SwingUtilities.invokeLater( () -> status.setText( player.status() ) ) );
+
+		JPanel bar = new JPanel();
+		bar.add( button( "<<",	() -> player.rewind()		) );
+		bar.add( button( "<",	() -> player.stepBack()		) );
+		bar.add( button( ">",	() -> player.stepForward()	) );
+		bar.add( button( ">>",	() -> player.play()			) );
+		bar.add( status );
+		return bar;
+	}
+
+	private JButton button( String label, Command command )
+	{	JButton button = new JButton( label );
+		button.addActionListener( e -> command.execute() );
+		return button;
 	}
 
 	/** The clock stops only after a file is chosen, as in the original. */
 	private void load()
 	{	try( InputStream in = new FileInputStream(
 				Files.userSelected(".",".life","Life File","Load")) )
-		{	clock.stop();
+		{	player.pause();
 			universe.load( in );
 			history.clear();		// the old commands no longer match the board
 		}
@@ -98,7 +117,7 @@ public final class Life extends JFrame
 	private void store()
 	{	try( OutputStream out = new FileOutputStream(
 				Files.userSelected(".",".life","Life File","Write")) )
-		{	clock.stop();
+		{	player.pause();
 			universe.store( out );
 		}
 		catch( IOException e )

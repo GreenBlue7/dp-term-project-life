@@ -30,4 +30,22 @@ class RuleTest {
         for (int n = 0; n <= 8; n++)
             assertFalse(LifeRule.SEEDS.nextState(true, n));
     }
+
+    @Test
+    void dayAndNightIsBornWithThreeOrSixToEight() {
+        for (int n = 0; n <= 8; n++)
+            assertEquals(n == 3 || n >= 6, LifeRule.DAY_AND_NIGHT.nextState(false, n));
+    }
+
+    @Test
+    void lifeWithoutDeathNeverKills() {
+        for (int n = 0; n <= 8; n++)
+            assertTrue(LifeRule.LIFE_WITHOUT_DEATH.nextState(true, n));
+    }
+
+    @Test
+    void mazeSurvivesWithOneToFive() {
+        for (int n = 0; n <= 8; n++)
+            assertEquals(n >= 1 && n <= 5, LifeRule.MAZE.nextState(true, n));
+    }
 }
